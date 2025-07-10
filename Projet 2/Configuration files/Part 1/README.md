@@ -6,3 +6,6 @@ The first part of the project was only to make the network and configure the int
 ![Network Diagram](images/network%20part%201.png)
 
 Also every address in the diagram are made of a submask of 22.<br>Also In the spread sheet R1 = Switch5, R2 = Switch6, R3 = Switch7.
+
+# Why no dynamic routing?
+Since we are used to dynamic routing like ospf the teacher wanted to push us to use static routing. At first i use ospf to make sure my network work then i switched it to manual routing which took a lot of time .
