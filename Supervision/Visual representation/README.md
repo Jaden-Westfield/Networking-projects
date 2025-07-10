@@ -1,4 +1,4 @@
-# network diagram
+# Network Diagrams
 To make it a little simpler to visualize i decided to make 3 diagram.
 ```
 1. network (only showing how network equipement are connected
