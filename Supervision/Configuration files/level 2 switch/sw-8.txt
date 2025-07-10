@@ -1,0 +1,168 @@
+enable
+conf t
+hostname Cab8-SWL2-048
+ip domain-name dingo.inc
+banner motd $
+*******************************
+**                           **
+**                           **
+**      personne autorise    **
+**         seulement         **
+**    antoine et jaden      **
+**                           **
+**                           **
+*******************************
+$
+banner login $
+ceci est le projet supervison, seul le personnel y est autorise 
+$
+ntp server 207.210.46.249
+!--------ssh----------------
+
+crypto key gen rsa module 1024
+ip ssh version 2
+
+!--------liste dacces---------
+
+ip access-list standard glip-service
+remark glpi server
+permit 10.10.5.20
+exit
+! crée un vue
+snmp-server view zabbix-view iso included
+! create zabbix group
+snmp-server group zabbix-reader v3 priv read zabbix-view access zabbix-service
+! crée un utilisateur snmpv3
+snmp-server user zabbix zabbix-reader v3 auth md5 cisco2023 priv des crosemont access zabbix-service
+! crée un snmp engine ID de l'equipement 
+!  "CISCO2023" en une valeur hexadécimale : 4349534F32303233
+snmp-server engineID remote 10.10.5.13 udp-port 162 4349534F32303233
+
+ip access-list standard zabbix-service
+remark Zabbix server
+permit 10.10.5.9
+permit 10.10.5.13
+permit 10.10.5.14
+exit
+snmp-server group supervision v3 priv read supervision
+
+snmp-server user admin supervision v3 auth md5 crosemont priv des admin
+username admin privilege 15 secret crosemont
+ip domain-name dingo.inc
+ip domain-lookup
+ip name-server 10.10.5.30
+snmp-server community dingo RO dingo
+enable password crosemont
+service password-encryption
+crypto key generate rsa general-keys modulus 2048
+ip ssh version 2
+line vty 0 15
+login local
+transport input ssh
+exec-timeout 10
+exit
+vlan 5
+name serveur
+vlan 10
+name telephonie
+vlan 20
+name direction
+vlan 30
+name RH
+vlan 40
+name finance
+vlan 50
+name vente-et-marketing
+vlan 60
+name technicien
+vlan 70
+name achats
+vlan 80
+name rp
+vlan 90
+name juridique
+vlan 100 
+name gestion
+vlan 120
+name qualite
+vlan 130
+name externe
+vlan 999
+name trou-noir
+vlan 110
+name natif
+
+
+ip default-gateway 10.10.100.38
+
+interface range f0/1-6
+description reseau-10
+switchport mode access
+switchport access vlan 10
+mls qos trust cos
+switchport voice vlan 10
+no shut
+
+interface range f0/7-12
+description range-90
+switchport mode access
+switchport access vlan 90
+mls qos trust cos
+switchport voice vlan 10
+no shut
+
+interface range f0/13-18
+description reseau-120
+switchport mode access
+switchport access vlan 120
+mls qos trust cos
+switchport voice vlan 10
+no shut
+
+interface range f0/19-23
+description reseau-130
+switchport mode access
+switchport access vlan 130
+mls qos trust cos
+switchport voice vlan 10
+no shut
+
+interface f0/24
+description lien-switch8
+switchport mode trunk
+switchport trunk native vlan 110
+switchport trunk allowed vlan 10,90,120,130,100
+no shut
+
+interface range f0/25-48
+description port ferme
+switchport mode access
+switchport access vlan 999
+shut
+
+int vlan 100
+ip add 10.10.100.48 255.255.255.0
+no shut
+
+int vlan 90
+ip add 10.10.90.254 255.255.255.0
+ip helper-address 10.10.5.30
+ip helper-address 10.10.5.31
+no shut 
+
+int vlan 120
+ip add 10.10.120.254 255.255.255.0
+ip helper-address 10.10.5.30
+ip helper-address 10.10.5.31
+no shut 
+
+int vlan 130
+ip add 10.10.130.254 255.255.255.0
+ip helper-address 10.10.5.30
+ip helper-address 10.10.5.31
+no shut 
+
+exit
+lldp run 
+
+do wr

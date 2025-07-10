@@ -1,0 +1,96 @@
+en
+conf t
+hostname Cab2-R-003
+banner motd $
+*******************************
+**                           **
+**                           **
+**      personne autorise    **
+**         seulement         **
+**    antoine et jayden      **
+**                           **
+**                           **
+*******************************
+$
+banner login $
+ceci est le projet supervison, seul le personnel y est autorise 
+$
+ntp server 207.210.46.249
+!--------ssh----------------
+
+crypto key gen rsa modulus 2048
+ip ssh version 2
+
+!--------liste dacces---------
+
+ip access-list standard glip-service
+remark glpi server
+permit 10.10.5.20
+exit
+
+ip access-list standard zabbix-service
+remark Zabbix server
+permit 10.10.5.9
+exit
+
+username admin privilege 15 secret crosemont
+ip domain-name dingo.inc
+ip domain-lookup
+ip name-server 10.10.5.30
+snmp-server community dingo RO dingo
+enable password crosemont
+service password-encryption
+snmp-server group supervision v3 priv read supervision
+
+snmp-server user admin supervision v3 auth md5 crosemont priv des admin
+!-------interfaces----------
+interface GigabitEthernet0/0
+ description lien vers internet
+ ip address dhcp
+ ip nat outside
+ duplex auto
+ speed auto
+ no shut
+!
+interface GigabitEthernet0/1
+ description lien vers RT04
+ ip address 10.100.100.26 255.255.255.252
+ duplex auto
+ ip nat inside
+ speed auto
+ no shut
+!
+interface GigabitEthernet0/2
+ no ip address
+ duplex auto
+ ip nat inside
+ speed auto
+ no shut
+!
+interface GigabitEthernet0/2.5
+ description interface de serveur
+ encapsulation dot1Q 5
+ ip nat inside
+ ip address 10.10.5.3 255.255.255.0
+ standby 1 ip 10.10.5.1
+ standby 1 priority 110
+ standby 1 preempt
+ standby 1 track GigabitEthernet0/1
+ no shut
+!
+interface Vlan1
+ no ip address
+ shutdown
+!
+ip classless
+ip route 0.0.0.0 0.0.0.0 GigabitEthernet0/0 
+
+ip nat inside source list 1 interface g0/0 overload
+
+access-list 1 permit any
+
+router ospf 1
+router-id 2.2.2.1
+network 10.100.100.24 0.0.0.3 area 0
+network 10.4.0.0 0.0.0.3 area 0
+network 10.10.5.0 0.0.0.255 area 0
