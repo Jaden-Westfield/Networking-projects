@@ -1,0 +1,148 @@
+Switch1
+
+enable
+conf t
+hostname Switch1
+enable secret inter
+line cons 0
+password nmap
+login
+exec-timeout 15 0
+line vty 0 15
+password wireshark
+exec-timeout 15 0
+exit
+banner motd #Vous n'avez pas acces au reseau de bob#
+description Gestion-distant
+ip default-gateway 10.34.59.99
+no ip domain lookup
+ip domain-name bob.org
+crypto key generate rsa general-keys modulus 2048
+ip ssh version 2
+username bob secret crosemont
+line vty 0 15
+login local
+transport input ssh
+exec-timeout 10
+exit
+service password-encryption
+do copy running-config startup-config
+
+ 
+vlan 921
+name Joueur1
+vlan 319
+name Joueur2
+vlan 891
+name gestion1
+vlan 157
+name natif
+vlan 667
+name trou-noir
+
+
+interface f0/1
+description lien-joueur1
+switchport mode access
+switchport access vlan 921
+no shut
+
+interface f0/2
+description lien-joueur2
+switchport mode access
+switchport access vlan 319
+no shut
+
+int f0/3
+description lien-Switch-5
+switchport trunk encapsulation dot1q
+switchport mode trunk
+switchport trunk allowed vlan 921,319,891
+switchport trunk native vlan 157
+no shut
+
+int f0/4
+description lien-Switch-5-admin
+switchport mode access
+switchport access vlan 891
+no shut 
+
+int range f0/5-24
+description trou-noir
+switchport mode access
+switchport access vlan 667
+shut
+
+logging 10.99.1.15
+logging trap informational
+
+interface vlan 891
+ip add 10.34.57.11 255.255.252.0
+no shut 
+
+logging 10.99.1.15
+logging trap informational
+
+
+line console 0
+login authentication myauth
+exit
+
+line vty 0 4
+login authentication myauth
+exit
+
+line vty 0 15
+login authentication myauth
+exit
+
+
+aaa new-model 
+tacacs server server1
+address ipv4 10.99.1.15 
+key JADEN_IS_HER
+aaa authentication login default group tacacs+ local
+aaa authorization config-commands
+aaa authorization exec default group tacacs+ local
+aaa authentication enable default group tacacs+ enable
+aaa authorization commands 1 default group tacacs+ local
+aaa authorization commands 15 default group tacacs+ local
+aaa accounting commands 15 default start-stop group tacacs+
+aaa accounting commands 1 default start-stop group tacacs+
+
+line vty 0 15
+login authentication default
+
+
+
+ip routing
+
+ip route 10.34.59.99 255.255.255.255 f0/4
+ip route 172.16.81.34 255.255.255.255 f0/3
+ip route 192.168.49.205 255.255.255.255 f0/3
+ip route 10.45.12.57 255.255.255.255 f0/3
+ip route 192.168.71.44 255.255.255.255 f0/3
+ip route 10.10.93.155 255.255.255.255 f0/3
+ip route 172.16.203.17 255.255.255.255 f0/4
+
+ip route 10.34.56.0 255.255.252.0 f0/4
+ip route 10.37.60.0 255.255.252.0 f0/4
+ip route 10.45.12.0 255.255.252.0 f0/3
+ip route 192.168.68.0 255.255.252.0 f0/3
+ip route 176.16.16.0 255.255.252.0 f0/3
+ip route 192.168.4.0 255.255.252.0 f0/3
+ip route 10.40.12.0 255.255.252.0 f0/3
+ip route 192.168.52.0 255.255.252.0 f0/3
+ip route 10.199.36.0 255.255.252.0 f0/4
+ip route 172.16.220.0 255.255.252.0 f0/3
+ip route 10.99.0.0 255.255.252.0 f0/3
+ip route 172.16.20.0 255.255.252.0 f0/3
+ip route 192.168.0.0 255.255.252.0 f0/4
+ip route 10.10.92.0 255.255.252.0 f0/3
+ip route 172.16.200.0 255.255.252.0 f0/4
+ip route 172.16.80.0 255.255.252.0 f0/1
+ip route 192.168.48.0 255.255.252.0 f0/2
+
+
+do wr 
+

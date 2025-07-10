@@ -1,0 +1,132 @@
+
+Switch 3
+
+enable
+conf t
+hostname Switch3
+enable secret inter
+line cons 0
+password nmap
+login
+exec-timeout 15 0
+line vty 0 15
+password wireshark
+exec-timeout 15 0
+exit
+banner motd #Vous n'avez pas acces au reseau de bob#
+description Gestion-distant
+ip default-gateway 10.37.63.99
+no ip domain lookup
+ip domain-name bob.org
+crypto key generate rsa general-keys modulus 2048
+ip ssh version 2
+username bob secret crosemont
+line vty 0 15
+login local
+transport input ssh
+exec-timeout 10
+exit
+service password-encryption
+do copy running-config startup-config
+
+vlan 402
+name joueur5
+vlan 849
+name joueur6
+vlan 649
+name joueur7
+vlan 944
+name joeur8
+vlan 871
+name gestion2
+vlan 157
+name natif
+vlan 667
+name trou-noir
+
+
+
+int f0/1
+description lien-joueur5
+switchport mode access
+switchport access vlan 402
+no shut
+
+int f0/2
+description lien-joueur6
+switchport mode access
+switchport access vlan 849
+no shut
+
+int f0/3
+description lien-Switch-6
+switchport trunk encapsulation dot1q
+switchport mode trunk
+switchport trunk allowed vlan 402,849,871
+switchport trunk native vlan 157
+no shut
+
+int f0/4
+description lien-Switch-6-admin
+switchport mode access
+switchport access vlan 871
+no shut
+
+int range f0/5-24
+switchport mode access
+switchport access vlan 667
+shut
+
+interface vlan 871
+ip add 10.37.61.22 255.255.252.0
+no shut
+
+logging 10.99.1.15
+logging trap informational
+
+aaa new-model 
+tacacs server server1
+address ipv4 10.99.1.15 
+key JADEN_IS_HER
+aaa authentication login default group tacacs+ local
+aaa authorization config-commands
+aaa authorization exec default group tacacs+ local
+aaa authentication enable default group tacacs+ enable
+aaa authorization commands 1 default group tacacs+ local
+aaa authorization commands 15 default group tacacs+ local
+aaa accounting commands 15 default start-stop group tacacs+
+aaa accounting commands 1 default start-stop group tacacs+
+
+line vty 0 15
+login authentication default
+
+ip routing
+
+ip route 172.16.18.241 255.255.255.255 f0/3
+ip route 192.168.5.171 255.255.255.255 f0/3
+ip route 10.40.13.8 255.255.255.255 f0/3
+ip route 192.168.55.23 255.255.255.255 f0/3
+ip route 10.37.63.99 255.255.255.255 f0/4
+ip route 172.16.23.222 255.255.255.255 f0/3
+ip route 192.168.0.68 255.255.255.255 f0/4
+
+ip route 172.16.20.0 255.255.252.0 f0/3
+ip route 192.168.0.0 255.255.252.0 f0/4
+ip route 10.10.92.0 255.255.252.0 f0/3
+ip route 172.16.200.0 255.255.252.0 f0/4
+ip route 10.34.56.0 255.255.252.0 f0/4
+ip route 10.37.60.0 255.255.252.0 f0/4
+ip route 10.45.12.0 255.255.252.0 f0/3
+ip route 192.168.68.0 255.255.252.0 f0/3
+ip route 10.40.12.0 255.255.252.0 f0/3
+ip route 192.168.52.0 255.255.252.0 f0/3
+ip route 10.199.36.0 255.255.252.0 f0/4
+ip route 172.16.220.0 255.255.252.0 f0/3
+ip route 10.99.0.0 255.255.252.0 f0/3
+ip route 172.16.80.0 255.255.252.0 f0/3
+ip route 192.168.48.0 255.255.252.0 f0/3
+ip route 176.16.16.0 255.255.252.0 f0/1
+ip route 192.168.4.0 255.255.252.0 f0/2
+
+
+do wr

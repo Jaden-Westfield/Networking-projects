@@ -1,0 +1,91 @@
+Switch test
+
+enable
+conf t
+hostname Switch-test
+enable secret inter
+line cons 0
+password nmap
+login
+exec-timeout 15 0
+line vty 0 15
+password wireshark
+exec-timeout 15 0
+exit
+banner motd #Vous n'avez pas acces au reseau de bob#
+ip default-gateway 10.199.36.252 
+no ip domain lookup
+ip domain-name bob.org
+crypto key generate rsa general-keys modulus 2048
+ip ssh version 2
+username bob secret crosemont
+line vty 0 15
+login local
+transport input ssh
+exec-timeout 10
+exit
+service password-encryption
+do copy running-config startup-config
+
+
+vlan 777 
+name tacacs
+vlan 173
+name ftp
+vlan 266
+name gestion3
+vlan 157
+name natif
+vlan 667
+name trou-noir
+
+
+interface f0/1
+description lien-tacacs
+switchport mode access
+switchport access vlan 777
+no shut
+
+interface f0/2
+description lien-ftp
+switchport mode access
+switchport access vlan 173
+no shut
+
+interface f0/3
+description lien-switch-7
+switchport mode trunk
+switchport trunk allowed vlan 777,173,266
+switchport trunk native vlan 157
+no shut 
+
+int range f0/4-24
+description trou-noir
+switchport mode access
+switchport access vlan 667
+shut
+
+
+int vlan 266
+description gestion
+ip add 10.199.38.169 255.255.252.0
+no shut
+
+logging 10.99.1.15
+logging trap informational
+
+
+aaa new-model 
+tacacs server server1
+address ipv4 10.99.1.15 
+key JADEN_IS_HER
+aaa authentication login default group tacacs+ local
+aaa authorization config-commands
+aaa authorization exec default group tacacs+ local
+aaa authentication enable default group tacacs+ enable
+aaa authorization commands 1 default group tacacs+ local
+aaa authorization commands 15 default group tacacs+ local
+aaa accounting commands 15 default start-stop group tacacs+
+aaa accounting commands 1 default start-stop group tacacs+
+
+do wr

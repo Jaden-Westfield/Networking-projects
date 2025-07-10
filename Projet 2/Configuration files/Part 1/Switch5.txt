@@ -1,0 +1,189 @@
+Switch 5
+
+enable
+conf t
+hostname Switch5
+enable secret inter
+line cons 0
+password nmap
+login
+exec-timeout 15 0
+line vty 0 15
+password wireshark
+exec-timeout 15 0
+exit
+banner motd #Vous n'avez pas acces au reseau de bob#
+no ip domain lookup
+ip domain-name bob.org
+crypto key generate rsa general-keys modulus 2048
+ip ssh version 2
+username bob secret crosemont
+line vty 0 15
+login local
+transport input ssh
+exec-timeout 10
+exit
+service password-encryption
+do copy running-config startup-config
+
+vlan 921
+name joueur1
+vlan 319
+name joueur2
+vlan 947
+name joueur3
+vlan 679
+name joeur4
+vlan 891
+name gestion1
+vlan 157
+name natif
+vlan 667
+name trou-noir
+
+int f0/1
+description lien-Switch-1
+switchport trunk encapsulation dot1q
+switchport mode trunk
+switchport trunk allowed vlan 921,319,891
+switchport trunk native vlan 157
+no shut
+
+int f0/2
+description lien-Switch-1-admin
+switchport mode access
+switchport access vlan 891
+no shut 
+
+int f0/3
+description lien-Switch-2
+switchport trunk encapsulation dot1q
+switchport mode trunk
+switchport trunk allowed vlan 947,679,891
+switchport trunk native vlan 157
+no shut
+
+int f0/4
+description lien-Switch-2-admin
+switchport mode access
+switchport access vlan 891
+no shut 
+
+int f0/5
+description lien-routeur-1-a-3
+no switchport
+ip add 10.10.93.155 255.255.252.0
+no shut
+
+int f0/6 
+description lien-routeur-1-a-3-admin
+no switchport
+ip add 172.16.203.17 255.255.252.0
+no shut
+
+int f0/7
+description lien-routeur-1-a-2
+no switchport
+ip add 192.168.238.31 255.255.252.0
+no shut
+
+int f0/8
+description lien-routeur-1-a-2-admin
+no switchport
+ip add 10.99.26.55 255.255.252.0
+no shut
+
+int range f0/9-24
+switchport mode access
+switchport access vlan 667
+shut
+
+interface vlan 921
+ip add 172.16.81.34 255.255.252.0
+no shut
+
+interface vlan 319
+ip add 192.168.49.205 255.255.252.0
+no shut 
+
+interface vlan 947
+ip add 10.45.12.57 255.255.252.0
+no shut 
+
+interface vlan 679
+ip add 192.168.71.44 255.255.252.0
+no shut 
+
+interface vlan 891
+ip add 10.34.59.99 255.255.252.0
+no shut 
+ex
+
+ip dhcp pool vlan921-joueur1
+network 172.16.80.0 255.255.252.0
+default-router 172.16.81.34
+
+
+
+ip dhcp pool vlan319-joueur2
+network 192.168.48.0 255.255.252.0
+default-router 192.168.49.205
+
+
+ip dhcp pool vlan947-joueur3
+network 10.45.12.0 255.255.252.0
+default-router 10.45.12.57
+
+
+ip dhcp pool vlan679-joueur4
+network 192.168.68.0 255.255.252.0
+default-router 192.168.71.44
+
+
+logging 10.99.1.15
+logging trap informational
+
+aaa new-model
+aaa authentication login default group tacacs+ local
+aaa authentication enable default group tacacs+ enable
+aaa authorization config-commands
+aaa authorization exec default group tacacs+ local
+aaa authorization commands 1 default group tacacs+ local
+aaa authorization commands 15 default group tacacs+ local
+aaa accounting commands 15 default start-stop group tacacs+
+aaa accounting commands 1 default start-stop group tacacs+
+tacacs-server host 10.99.1.15
+tacacs-server key JADEN_IS_HER
+tacacs-server timeout 10
+
+
+ip routing
+
+ip route 10.34.57.11 255.255.255.255 f0/2
+ip route 10.34.58.22 255.255.255.255 f0/4
+ip route 10.199.36.252 255.255.255.255 f0/6
+ip route 10.99.2.144 255.255.255.255 f0/6
+ip route 172.16.223.89 255.255.255.255 f0/5
+ip route 10.10.93.134 255.255.255.255 f0/5
+ip route 172.16.200.84 255.255.255.255 f0/6
+
+ip route 172.16.80.0 255.255.252.0 f0/1
+ip route 192.168.48.0 255.255.252.0 f0/1
+ip route 10.45.12.0 255.255.252.0 f0/3
+ip route 192.168.68.0 255.255.252.0 f0/3
+ip route 176.16.16.0 255.255.252.0 f0/5
+ip route 192.168.4.0 255.255.252.0 f0/5
+ip route 10.40.12.0 255.255.252.0 f0/5
+ip route 192.168.52.0 255.255.252.0 f0/5
+ip route 10.199.36.0 255.255.252.0 f0/6
+ip route 172.16.220.0 255.255.252.0 f0/5
+ip route 10.99.0.0 255.255.252.0 f0/6
+ip route 172.16.20.0 255.255.252.0 f0/5
+ip route 192.168.0.0 255.255.252.0 f0/6
+ip route 10.37.60.0 255.255.252.0 f0/6
+
+
+do wr
+
+
+
